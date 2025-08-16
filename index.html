@@ -1,1 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>XGB: Attention-CNN-LSTM + XGBoost Hybrid Forecasting — Project Portfolio</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#7dd3fc; --white:#e6eef6;
+      --maxw:900px;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    body{background:linear-gradient(180deg,#071023 0%, #0b1320 100%); color:var(--white); margin:0; padding:32px; display:flex; justify-content:center;}
+    .container{max-width:var(--maxw); width:100%;}
+    header{display:flex; align-items:center; gap:16px; margin-bottom:20px;}
+    h1{margin:0; font-size:1.45rem;}
+    .meta{color:var(--muted); font-size:0.9rem;}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:20px; border-radius:10px; margin-bottom:18px; box-shadow:0 6px 18px rgba(2,6,23,0.6);}
+    table{width:100%; border-collapse:collapse; font-size:0.95rem;}
+    th, td{padding:8px 10px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.04);}
+    th{color:var(--accent); font-weight:600;}
+    .row{display:flex; gap:16px; flex-wrap:wrap;}
+    .col{flex:1 1 320px;}
+    .screens{display:grid; grid-template-columns:repeat(2, 1fr); gap:10px;}
+    img{width:100%; border-radius:6px; border:1px solid rgba(255,255,255,0.03);}
+    a{color:var(--accent); text-decoration:none;}
+    .small{font-size:0.9rem; color:var(--muted);}
+    .btn{display:inline-block; padding:8px 12px; background:transparent; border:1px solid rgba(125,211,252,0.12); border-radius:6px; color:var(--accent); text-decoration:none; font-weight:600;}
+    footer{margin-top:18px; color:var(--muted); font-size:0.85rem;}
+    pre.code{background:#071425; padding:12px; border-radius:6px; overflow:auto; font-size:0.9rem; color:#cbd5e1;}
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <div>
+        <h1>XGB: Attention-CNN-LSTM + XGBoost Hybrid Forecasting</h1>
+        <div class="meta">Project: two-stage forecasting pipeline (CNN+self-attention→LSTM embeddings → XGBoost). Reviewer: <strong>Gopala Krishna Kuchi</strong></div>
+      </div>
+    </header>
+
+    <!-- Factual one-paragraph summary (professor required) -->
+    <section class="card" id="summary">
+      <h2 style="margin-top:0; font-size:1.05rem;">What this project is and what I implemented</h2>
+      <p class="small" style="margin-top:6px; line-height:1.45;">
+        This project builds a two-stage price forecasting pipeline: a 1D CNN + self-attention feeding an LSTM (trained on raw OHLCV windows) whose final hidden-state embeddings are refined by an XGBoost model to predict next-day returns/probabilities. My contributions (implemented and tested): data ingestion & windowing; CNN-Attention-LSTM model and training loop with checkpointing; embedding extraction and export; XGBoost hyperparameter tuning and model persistence; an inference wrapper that emits the specified JSON; Crew AI DecisionAgent and ExplainAgent; integration tests and a backtesting harness that simulates decisions and reports performance metrics. The repository, commits, and sprint records are linked below.
+      </p>
+    </section>
+
+    <!-- Deeper overview -->
+    <section class="card" id="overview">
+      <h3 style="margin-top:0.2rem">Project overview — quick facts</h3>
+      <div class="row" style="margin-top:8px">
+        <div class="col">
+          <table aria-label="Quick facts">
+            <tr><th>Acceptance targets</th><td class="small">windowed OHLCV → embeddings → XGBoost; inference JSON: {date, cnn_lstm_score, xgb_prob}</td></tr>
+            <tr><th>Decision thresholds</th><td class="small">xgb_prob &gt; 0.6 → BUY, &lt; 0.4 → SELL, otherwise HOLD</td></tr>
+            <tr><th>Performance</th><td class="small">End-to-end inference target &le; 5 s on sample data</td></tr>
+            <tr><th>Robustness</th><td class="small">Missing bars handled via imputation logic; model checkpoints and early stopping included</td></tr>
+          </table>
+        </div>
+        <div class="col small">
+          <strong>Agents</strong>
+          <ul>
+            <li><strong>InferenceAgent</strong> — loads CNN+LSTM + XGB and returns scores.</li>
+            <li><strong>DecisionAgent</strong> — maps xgb_prob → BUY/SELL/HOLD via Crew AI LLM prompt (outputs JSON only).</li>
+            <li><strong>ExplainAgent</strong> — returns a concise rationale using feature importances.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sprint objectives summary table -->
+    <section class="card" id="sprints">
+      <h3 style="margin-top:0.2rem">Sprint objective summary (high level)</h3>
+      <table>
+        <thead>
+          <tr><th>Sprint</th><th>Primary objective</th><th>Deliverable (minimal)</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Sprint 1</td><td>Data ingestion & windowing</td><td>yfinance OHLCV → clean → z-score → windows (train/val/test)</td><td>Complete</td></tr>
+          <tr><td>Sprint 2</td><td>Model pretraining & embedding export</td><td>CNN+Attention+LSTM training; hidden-state export</td><td>Complete</td></tr>
+          <tr><td>Sprint 3</td><td>XGBoost fine-tuning</td><td>Grid search & persisted XGBoost model trained on learned embeddings</td><td>Complete</td></tr>
+          <tr><td>Sprint 4</td><td>Inference, agents, integration & backtesting</td><td>Inference wrapper, CrewAI agents, integration tests, backtest harness</td><td>Complete</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Short, scannable accomplishments -->
+    <section class="card" id="accomplishments">
+      <h3 style="margin-top:0.2rem">What I completed (concise)</h3>
+      <ul class="small">
+        <li>Implemented end-to-end data pipeline: fetch → preprocess → normalize → slice windows (XGB.1).</li>
+        <li>Built and trained a CNNAttentionLSTM model with training loop, checkpointing and early stopping (XGB.2).</li>
+        <li>Extracted and saved LSTM hidden-state embeddings to CSV for XGBoost training (XGB.3).</li>
+        <li>Performed XGBoost hyperparameter search and trained the final model; saved to joblib (XGB.4).</li>
+        <li>Wrote inference wrapper that emits required JSON and meets robustness checks (XGB.5).</li>
+        <li>Implemented DecisionAgent and ExplainAgent (Crew AI prompts) and an end-to-end test that chains Inference → Decision → Explain (XGB.6).</li>
+        <li>Added integration tests and a backtesting harness that calculates Sharpe, drawdown, and trade logs (XGB.7/XGB.8).</li>
+      </ul>
+    </section>
+
+    <!-- Evidence / screenshots + code pointers -->
+    <section class="card" id="evidence">
+      <h3 style="margin-top:0.2rem">Evidence (key contributions & artifacts)</h3>
+      <div class="row" style="align-items:flex-start">
+        <div class="col">
+          <p class="small"><strong>Repository & issue links</strong></p>
+          <p class="small">Code repository: <a href="https://github.com/Gopi0318/Kuchi-AI-Agent-Stock-Prediction/tree/kuchi-sprint4" target="_blank">Gopi0318 / Kuchi-sprint4</a></p>
+          <p class="small">User story (issue): <a href="https://github.com/Rivier-Computer-Science/AI-Agent-Stock-Prediction/issues/589" target="_blank">Issue #589 — XGB: Attention-CNN-LSTM + XGBoost Hybrid Forecasting</a></p>
+          <p class="small">Commits by author: <a href="https://github.com/Gopi0318/Kuchi-AI-Agent-Stock-Prediction/commits/kuchi-sprint4/?author=Gopi0318" target="_blank">commits / kuchi-sprint4 (author=Gopi0318)</a></p>
+          <p class="small">Key files: <code>src/UI/xgb.py</code> (main pipeline), <code>src/Backtesting/xgb_backtest.py</code>.</p>
+        </div>
+
+        <div class="col">
+          <p class="small"><strong>Screenshots (important contributions)</strong></p>
+          <div class="screens">
+            <a href="1.jpg"><img src="1.jpg" alt="screenshot 1 — training logs" /></a>
+            <a href="2.jpg"><img src="2.jpg" alt="screenshot 2 — embeddings export" /></a>
+            <a href="3.jpg"><img src="3.jpg" alt="screenshot 3 — xgboost grid search" /></a>
+            <a href="4.jpg"><img src="4.jpg" alt="screenshot 4 — backtest summary" /></a>
+          </div>
+          <p class="small" style="margin-top:8px">Click images to view full size.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Short code snippet example (optional) -->
+    <section class="card" id="snippet">
+      <h3 style="margin-top:0.2rem">Representative code (inference JSON)</h3>
+      <pre class="code">{
+  "date": "2025-06-30",
+  "cnn_lstm_score": 0.12,
+  "xgb_prob": 0.78
+}
+      </pre>
+      <p class="small">The inference wrapper emits the JSON above; DecisionAgent maps <code>xgb_prob</code> to BUY/SELL/HOLD according to fixed thresholds.</p>
+    </section>
+
+    <!-- Appendix: user stories & sprint docs (not a data dump) -->
+    <section class="card" id="appendix">
+      <h3 style="margin-top:0.2rem">Appendix — sprint records & commits</h3>
+      <p class="small">I did not personally author every user story listed in the project; the full user story list and per-sprint hours are attached here for reviewer reference.</p>
+      <ul class="small">
+        <li>Sprint 1 task hours document: :contentReference[oaicite:0]{index=0}</li>
+        <li>Sprint 2 task hours document: :contentReference[oaicite:1]{index=1}</li>
+        <li>Sprint 3 task hours document: :contentReference[oaicite:2]{index=2}</li>
+        <li>Sprint 4 task hours document: :contentReference[oaicite:3]{index=3}</li>
+      </ul>
+
+      <p class="small" style="margin-top:8px"><strong>Note to reviewer</strong>: the appendix contains detailed per-task time logs and a commit list; read it if you need the verbatim sprint entries. The main page above contains the concise, employer-focused summary you requested.</p>
+    </section>
+
+    <footer>
+      <div class="small">If you want this page converted into a minimal Markdown README or a PDF portfolio, I can produce that next. — <strong>Kalyan</strong></div>
+    </footer>
+  </div>
+</body>
+</html>
 
